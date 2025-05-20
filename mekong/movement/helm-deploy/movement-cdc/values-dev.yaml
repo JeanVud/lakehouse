@@ -1,0 +1,29 @@
+labels: {}
+
+registry:
+  secretName: docker-pull-key
+
+image: docker.mservice.io/momovn-dev/gke/mekong/movement-cdc
+imagePullPolicy: IfNotPresent
+
+tolerations:
+  - key: "service"
+    operator: "Equal"
+    value: "edge-service"
+    effect: "NoSchedule"
+
+nodeSelector:
+  cloud.google.com/gke-nodepool: spot-c2d-2-8
+
+movement:
+  replica: 1
+  logLevel: DEBUG
+  tolerations: []
+  nodeSelector: {}
+  args:
+    - "run"
+
+pubsub:
+  projectId: data-platform-exp-322803
+  topic: movement-change-data-capture-dev
+  subscriber: movement-change-data-capture-subscriber

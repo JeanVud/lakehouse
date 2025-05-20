@@ -1,0 +1,57 @@
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "spark"
+    effect: "NoSchedule"
+
+nodeSelector:
+  cloud.google.com/gke-nodepool: spark-spot-c2-4-16
+
+database:
+  enabled: true
+
+  pv:
+    diskId: projects/momovn-data-platform/zones/us-central1-c/disks/movement-database-pd
+    storageClass: standard-rwo
+  pvc:
+    storageSize: 10Gi
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-c
+
+webserver:
+  host: movement.mservice.io
+  port: 8080
+  replica: 2
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 2Gi
+
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 5
+    scaleDownStabilizationWindowSeconds: 300
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 70
+
+  oauth2:
+    clientId: 727854162592-f4kih4vrc852n91enk36lbgglceda199.apps.googleusercontent.com
+    clientSecret: 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
+
+config:
+  migration:
+    location: gs://momovn-datalake-movement-us-central1-prod/gcp/bigquery
+  logging:
+    remote_base_log_folder: gs://momovn-datalake-spark-files-us-central1-prod/airflow

@@ -1,0 +1,4 @@
+# this file is empty by default
+# use "values-prod.yaml" for production environment
+# use "values-dev.yaml" for development environment
+# use "values-canary.yaml" for canary deployment

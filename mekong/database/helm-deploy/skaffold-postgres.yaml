@@ -1,0 +1,26 @@
+---
+apiVersion: skaffold/v4beta2
+kind: Config
+profiles:
+  - name: dev
+    deploy:
+      helm:
+        releases:
+          - name: movement-db
+            chartPath: mekong/database/helm-deploy/postgres
+            namespace: mekong
+            valuesFiles:
+              - mekong/database/helm-deploy/postgres/values.yaml
+              - mekong/database/helm-deploy/postgres/values-prod.yaml
+              - mekong/database/helm-deploy/postgres/values-dev.yaml
+
+  - name: prod
+    deploy:
+      helm:
+        releases:
+          - name: movement-db
+            chartPath: mekong/database/helm-deploy/postgres
+            namespace: mekong
+            valuesFiles:
+              - mekong/database/helm-deploy/postgres/values.yaml
+              - mekong/database/helm-deploy/postgres/values-prod.yaml

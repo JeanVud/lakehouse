@@ -1,0 +1,105 @@
+{{- $nodeSelector := or .Values.scheduler.nodeSelector .Values.nodeSelector }}
+{{- $tolerations := or .Values.scheduler.tolerations .Values.tolerations }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-scheduler
+  labels:
+    tier: datalake
+    component: scheduler
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.scheduler.replica | default 1 }}
+  selector:
+    matchLabels:
+      tier: datalake
+      component: scheduler
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        tier: datalake
+        component: scheduler
+        release: {{ .Release.Name }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: {{ .Values.airflowKsa | default "airflow" }}
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: {{ .Values.registry.secretName }}
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: [
+          'sh', '-c',
+          "until nc -zv movement-db.{{ .Release.Namespace }}.svc.cluster.local {{ .Values.database.port }}; do echo waiting for mydb; sleep 2; done"
+        ]
+      containers:
+      - name: scheduler
+        image: {{ template "scheduler_image" . }}
+        imagePullPolicy: {{ .Values.scheduler.image.pullPolicy | default .Values.image.pullPolicy | quote }}
+        {{- if .Values.scheduler.command }}
+        command: {{ tpl (toYaml .Values.scheduler.command) . | nindent 12 }}
+        {{- end }}
+        {{- if .Values.scheduler.args }}
+        args: {{ tpl (toYaml .Values.scheduler.args) . | nindent 12 }}
+        {{- end }}
+        env:
+        - name: AIRFLOW__LOGGING__LOGGING_LEVEL
+          value: INFO
+        envFrom:
+          - configMapRef:
+              name: {{ .Release.Name }}-env-config
+        volumeMounts:
+        {{- if .Values.airflowConfigFile }}
+        - name: config
+          mountPath: {{ template "airflow_config_path" . }}
+          subPath: airflow.cfg
+          readOnly: true
+        {{- end }}
+        - name: config
+          mountPath: {{ template "airflow_kubernetes_excutor_pod_template_config_path" . }}
+          subPath: kubernetes-pod-template-file.yaml
+          readOnly: true
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.scheduler.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.scheduler.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.scheduler.livenessProbe.failureThreshold }}
+          periodSeconds: {{ .Values.scheduler.livenessProbe.periodSeconds }}
+          exec:
+            command:
+              {{- if .Values.scheduler.livenessProbe.command }}
+                {{- toYaml .Values.scheduler.livenessProbe.command  | nindent 16 }}
+              {{- else }}
+                {{- include "scheduler_liveness_check_command" . | indent 14 }}
+              {{- end }}
+        startupProbe:
+          timeoutSeconds: {{ .Values.scheduler.startupProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.scheduler.startupProbe.failureThreshold }}
+          periodSeconds: {{ .Values.scheduler.startupProbe.periodSeconds }}
+          exec:
+            command:
+              {{- if .Values.scheduler.startupProbe.command }}
+                {{- toYaml .Values.scheduler.startupProbe.command  | nindent 16 }}
+              {{- else }}
+                {{- include "scheduler_startup_check_command" . | indent 14 }}
+              {{- end }}
+      
+      volumes:
+      {{- if .Values.airflowConfigFile }}
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-config
+      {{- end }}
+            

@@ -1,0 +1,35 @@
+tolerations:
+  - key: "service"
+    operator: "Equal"
+    value: "edge-service"
+    effect: "NoSchedule"
+
+nodeSelector:
+  cloud.google.com/gke-nodepool: spot-c2d-2-8
+
+database:
+  host: movement-db.mekong.svc.cluster.local
+  port: 5432
+  dbname: grist
+
+grist:
+  enabled: true
+
+  port: 8484
+  host: pulse.dev.mservice.io
+
+  pv:
+    diskId: projects/data-platform-exp-322803/zones/us-central1-c/disks/grist-docs-pd
+    storageClass: standard-rwo
+  pvc:
+    storageSize: 10Gi
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-c

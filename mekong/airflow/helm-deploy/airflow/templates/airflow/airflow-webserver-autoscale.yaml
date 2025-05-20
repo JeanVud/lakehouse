@@ -1,0 +1,45 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Release.Name }}-webserver-autoscale
+spec:
+  maxReplicas: {{ .Values.webserver.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.webserver.autoscaling.minReplicas }}
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Release.Name }}-webserver
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: {{ .Values.webserver.autoscaling.scaleDownStabilizationWindowSeconds | default 300 }}
+      policies:
+      - type: Percent
+        value: 20
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 20
+        periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Max
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.webserver.autoscaling.targetCPUUtilizationPercentage }}
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.webserver.autoscaling.targetMemoryUtilizationPercentage }}
+

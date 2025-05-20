@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    tier: datalake
+    service: movement
+    component: config
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end -}}
+{{- $Global := . }} # prevent error converting YAML to JSON: yaml: line 14: mapping values are not allowed in this context
+data:
+  setup_create_db_user.sql: {{ (tpl (.Files.Get "files/setup_create_db_user.sql") . | quote ) }}
+  setup_grant_permission_for_user.sql: {{ (tpl (.Files.Get "files/setup_grant_permission_for_user.sql") . | quote ) }}
+  postgresql.conf: {{ (tpl (.Files.Get "files/postgresql.conf") . | quote ) }}
+

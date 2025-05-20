@@ -1,0 +1,22 @@
+apache-airflow==2.10.0
+
+apache-airflow[statsd]==2.10.0
+apache-airflow[google,amazon,apache-spark]==2.10.0
+apache-airflow[atlassian-jira]==2.10.0
+# apache-airflow[cncf-kubernetes]==2.10.0
+apache-airflow-providers-cncf-kubernetes==8.3.0
+apache-airflow[google_auth]==2.10.0
+apache-airflow[devel_hadoop]==2.10.0
+apache-airflow[openlineage]==2.10.0
+psycopg2==2.9.9
+pyhive[hive]
+google-cloud
+google
+google-cloud-bigquery
+pydantic
+sqlglot
+click
+croniter
+gevent
+paramiko
+plyvel

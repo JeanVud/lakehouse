@@ -1,0 +1,33 @@
+tolerations:
+  - key: "dedicated"
+    operator: "Equal"
+    value: "spark"
+    effect: "NoSchedule"
+
+nodeSelector:
+  cloud.google.com/gke-nodepool: spark-spot-c2-4-16
+
+database:
+  enabled: true
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+  pv:
+    diskId: projects/momovn-data-platform/zones/us-central1-c/disks/movement-database-pd
+    storageClass: standard-rwo
+  pvc:
+    storageSize: 18Gi
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-c

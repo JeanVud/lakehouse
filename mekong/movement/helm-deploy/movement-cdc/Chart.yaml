@@ -1,0 +1,10 @@
+
+# This file was generated from:
+# tools/scripts/gen_service_config.py
+
+apiVersion: v1
+appVersion: "0.0.1"
+description: A Helm chart for Kubernetes
+name: datalake-movement-cdc
+version: 0.0.1
+

@@ -1,0 +1,108 @@
+{{ define "airflow_image" -}}
+{{ printf "%s:2%s" .Values.image.repository .Values.image.tag }}
+{{- end }}
+
+{{ define "database_image" -}}
+{{ printf "%s:%s" .Values.database.image.repository .Values.database.image.tag }}
+{{- end }}
+
+{{ define "scheduler_image" -}}
+  {{- if not .Values.scheduler.image.repository }}
+    {{- printf "%s" (include "airflow_image" .) }}
+  {{- else }}
+    {{- printf "%s:%s" .Values.scheduler.image.repository .Values.scheduler.image.tag }}
+  {{- end }}
+{{- end }}
+
+{{ define "webserver_image" -}}
+  {{- if not .Values.webserver.image.repository }}
+    {{- printf "%s" (include "airflow_image" .) }}
+  {{- else }}
+    {{- printf "%s:%s" .Values.webserver.image.repository .Values.webserver.image.tag }}
+  {{- end }}
+{{- end }}
+
+{{ define "worker_image" -}}
+  {{- if not .Values.worker.image.repository }}
+    {{- printf "%s" (include "airflow_image" .) }}
+  {{- else }}
+    {{- printf "%s:%s" .Values.worker.image.repository .Values.worker.image.tag }}
+  {{- end }}
+{{- end }}
+
+{{ define "airflow_config_path" -}}
+{{ (printf "%s/airflow.cfg" .Values.airflowHome ) | quote }}
+{{- end }}
+
+{{ define "airflow_webserver_config_path" -}}
+{{ (printf "%s/webserver_config.py" .Values.airflowHome ) | quote }}
+{{- end }}
+
+{{ define "airflow_kubernetes_excutor_pod_template_config_path" -}}
+{{ (printf "%s/kubernetes-pod-template-file.yaml" .Values.airflowHome ) | quote }}
+{{- end }}
+
+{{- define "scheduler_liveness_check_command" }}
+  {{- if semverCompare ">=2.5.0" .Values.airflowVersion }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --local
+  {{- else if semverCompare ">=2.1.0" .Values.airflowVersion }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --hostname $(hostname)
+  {{- else }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 exec /entrypoint python -Wignore -c "
+    import os
+    os.environ['AIRFLOW__CORE__LOGGING_LEVEL'] = 'ERROR'
+    os.environ['AIRFLOW__LOGGING__LOGGING_LEVEL'] = 'ERROR'
+    from airflow.jobs.scheduler_job import SchedulerJob
+    from airflow.utils.db import create_session
+    from airflow.utils.net import get_hostname
+    import sys
+    with create_session() as session:
+        job = session.query(SchedulerJob).filter_by(hostname=get_hostname()).order_by(
+            SchedulerJob.latest_heartbeat.desc()).limit(1).first()
+    sys.exit(0 if job.is_alive() else 1)"
+  {{- end }}
+{{- end }}
+
+
+{{- define  "scheduler_startup_check_command" }}
+  {{- if semverCompare ">=2.5.0" .Values.airflowVersion }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --local
+  {{- else if semverCompare ">=2.1.0" .Values.airflowVersion }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 AIRFLOW__LOGGING__LOGGING_LEVEL=ERROR exec /entrypoint \
+    airflow jobs check --job-type SchedulerJob --hostname $(hostname)
+  {{- else }}
+  - sh
+  - -c
+  - |
+    CONNECTION_CHECK_MAX_COUNT=0 exec /entrypoint python -Wignore -c "
+    import os
+    os.environ['AIRFLOW__CORE__LOGGING_LEVEL'] = 'ERROR'
+    os.environ['AIRFLOW__LOGGING__LOGGING_LEVEL'] = 'ERROR'
+    from airflow.jobs.scheduler_job import SchedulerJob
+    from airflow.utils.db import create_session
+    from airflow.utils.net import get_hostname
+    import sys
+    with create_session() as session:
+        job = session.query(SchedulerJob).filter_by(hostname=get_hostname()).order_by(
+            SchedulerJob.latest_heartbeat.desc()).limit(1).first()
+    sys.exit(0 if job.is_alive() else 1)"
+  {{- end }}
+{{- end }}

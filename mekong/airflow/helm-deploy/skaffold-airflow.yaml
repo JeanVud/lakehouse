@@ -1,0 +1,53 @@
+---
+apiVersion: skaffold/v4beta2
+kind: Config
+profiles:
+  - name: dev
+    build:
+      artifacts:
+      - image: docker.mservice.io/momovn-dev/gke/lakehouse/oss/airflow
+        context: ./mekong
+        docker:
+          dockerfile: ./airflow/dockerfiles/airflow.dockerfile
+
+      local: {}
+
+    deploy:
+      helm:
+        releases:
+          - name: airflow
+            chartPath: mekong/airflow/helm-deploy/airflow
+            namespace: mekong
+            valuesFiles:
+              - mekong/airflow/helm-deploy/airflow/values.yaml
+              - mekong/airflow/helm-deploy/airflow/values-prod.yaml
+              - mekong/airflow/helm-deploy/airflow/values-dev.yaml
+              - secrets://mekong/airflow/helm-deploy/airflow/values-secrets-dev.yaml
+            setValueTemplates:
+              image.repository: "{{ .IMAGE_REPO }}"
+              image.tag: "{{ .IMAGE_TAG}}@{{.IMAGE_DIGEST }}"
+
+
+  - name: prod
+    build:
+      artifacts:
+      - image: docker.mservice.io/momovn-dev/gke/lakehouse/oss/airflow
+        context: ./mekong
+        docker:
+          dockerfile: ./airflow/dockerfiles/airflow.dockerfile
+
+      local: {}
+
+    deploy:
+      helm:
+        releases:
+          - name: airflow
+            chartPath: mekong/airflow/helm-deploy/airflow
+            namespace: mekong
+            valuesFiles:
+              - mekong/airflow/helm-deploy/airflow/values.yaml
+              - mekong/airflow/helm-deploy/airflow/values-prod.yaml
+              - secrets://mekong/airflow/helm-deploy/airflow/values-secrets-prod.yaml
+            setValueTemplates:
+              image.repository: "{{ .IMAGE_REPO }}"
+              image.tag: "{{ .IMAGE_TAG}}@{{.IMAGE_DIGEST }}"

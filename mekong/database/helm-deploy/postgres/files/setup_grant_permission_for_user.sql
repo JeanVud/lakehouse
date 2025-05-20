@@ -1,0 +1,2 @@
+GRANT ALL PRIVILEGES ON DATABASE {{ .Values.database.dbname | default "airflow" }} TO {{ .Values.database.username | default "airflow" }};
+GRANT ALL ON SCHEMA public TO {{ .Values.database.username | default "airflow" }};

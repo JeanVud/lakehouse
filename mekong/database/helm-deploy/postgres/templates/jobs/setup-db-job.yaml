@@ -1,0 +1,63 @@
+{{- if .Values.jobs.setupDb.enabled }}
+{{- $nodeSelector := .Values.nodeSelector }}
+{{- $tolerations := .Values.tolerations }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-setup-db-job
+  labels:
+    tier: airflow
+    service: movement
+    component: setup-db-job
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+    {{- with .Values.labels }}
+      {{- toYaml . | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "0"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded,hook-failed
+spec:  
+  template:
+    spec:
+      serviceAccountName: {{ .Values.airflowKsa | default "airflow" }}
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      volumes:
+      - name: scripts
+        configMap:
+          name: {{ .Release.Name }}-config
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command: ['sh', '-c', "until nc -zv {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local {{ .Values.database.port }}; do echo waiting for mydb; sleep 2; done"]
+      containers:
+      - name: setup
+        image: {{ template "database_image" . }}
+        command: ["sh", "-c"]
+        args:
+          - echo create database and user for airflow service;
+            psql -w -h {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local -p {{ .Values.database.port }} -f /opt/postgresql/scripts/setup_create_db_user.sql;
+            echo grant permisisons for airflow service user;
+            psql -w -h {{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local -p {{ .Values.database.port }} -f /opt/postgresql/scripts/setup_grant_permission_for_user.sql -d {{ .Values.database.dbname | default "airflow" }};
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secrets
+              key: POSTGRES_ROOT_PASSWORD
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secrets
+              key: POSTGRES_ROOT_USERNAME
+        volumeMounts:
+        - name: scripts
+          mountPath: /opt/postgresql/scripts
+      restartPolicy: Never
+  backoffLimit: 1
+{{- end }}

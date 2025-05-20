@@ -1,0 +1,64 @@
+{{- $nodeSelector := or .Values.grist.nodeSelector .Values.nodeSelector }}
+{{- $tolerations := or .Values.grist.tolerations .Values.tolerations }}
+{{- $affinity := .Values.grist.affinity }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-home
+  labels:
+    tier: datalake
+    service: movement
+    component: grist
+    worker: home
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  strategy:
+   type: Recreate
+  replicas: 2
+  selector:
+    matchLabels:
+      tier: datalake
+      service: movement
+      component: grist
+      worker: home
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        tier: datalake
+        service: movement
+        component: grist
+        worker: home
+        release: {{ .Release.Name }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      affinity:
+{{ toYaml $affinity | indent 8 }}
+      restartPolicy: Always
+      containers:
+        - name: home
+          image: {{ template "grist_image" . }}
+          imagePullPolicy: {{ .Values.grist.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.grist.port }}
+          resources: {{- toYaml .Values.grist.resources | nindent 12 }}
+          env:
+            - name: GRIST_SERVERS
+              value: home,static
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config-env
+            - secretRef:
+                name: oauth
+            

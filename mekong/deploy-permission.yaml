@@ -1,0 +1,7 @@
+permission:
+  - email: vinh.dang@mservice.com.vn
+    services:
+      - mekong-*
+  - email: quoc.ho@mservice.com.vn
+    services:
+      - mekong-*

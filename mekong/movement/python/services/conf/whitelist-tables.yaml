@@ -1,0 +1,112 @@
+- name: momovn-prod.APP_PERFORMANCE_REPORT
+  tables:
+    - name: SERVICE_NAME_LIST
+      schedule: "15 16 * * *"
+      enable_insert_override: false
+    - name: FECREDIT_ACTION_LIST_UPLOAD
+      schedule: "15 16 * * *"
+    - name: FC_32S_CR_V5
+    - name: FC_32S_SUMMARY_V5
+    - name: FC_32S_SUMMARY_USER_V5
+    - name: FC_32S_DURATION_METRIC_DAILY_V2
+    - name: FC_32S_OVERALL_FUNNEL_V5
+    - name: FECREDIT_DETECT_ENTRY_POINT_V5
+      schedule: "15 16 * * *"
+    - name: ERROR_CODE_FE
+      schedule: "15 16 * * *"
+    - name: FECREDIT_PREPDATA_TABLE_V5_FULL
+      schedule: "15 16 * * *"
+      enable_insert_override: true
+    - name: FC_32S_ERROR_EXPLANATION_V5
+    - name: FC_32S_DURATION_V2
+- name: momovn-prod.SOAP_ADMIN
+  tables:
+    - name: AI_KYC_TRACKING
+    - name: B2C_TRACKING_AIRLINE_ANCILLARY
+- name: momovn-prod.GR_NOTIFICATION
+  tables:
+    - name: D_USER_DEVICE_PROFILE
+      schedule: "0 7 * * *"
+      kind: "normal-table"
+- name: project-5400504384186300846.AIRFLOW
+  tables:
+    - name: TASK_INSTANCE
+    - name: DAG_RUN
+- name: project-5400504384186300846.APP_EVENT
+  tables:
+    - name: D_MINIAPP_LOAD_STAGE
+      schedule: "0 7 * * *"
+      kind: "normal-table"
+    - name: D_MINIAPP_LOAD_MA_TYPE
+      schedule: "0 7 * * *"
+      kind: "normal-table"
+    - name: EVENTS_MINIAPP_LOAD
+      schedule: "0 2 * * *"
+      enable_insert_override: true
+- name: project-5400504384186300846.analytics_153024151
+  tables:
+    - name: events_YYYYMMDD
+      schedule: "15 0 * * *"
+      sensor: sharding
+      # "-1,-2,-3,-4"
+      backfilling: "-4"
+- name: project-5400504384186300846.CALL_CENTER
+  tables:
+    - name: AGENT
+- name: data-platform-exp-322803.VINHDP
+  tables:
+    - name: TEST_N
+    - name: TEST_S_YYYYMMDD
+    - name: TEST_P
+- name: project-5400504384186300846.SCORE_GIFT
+  tables:
+    - name: GIFT_TRANS
+- name: project-5400504384186300846.GR_SERVICE_LIST
+  tables:
+    - name: D_SERVICE_LIST
+- name: project-5400504384186300846.BITEAM_EXP
+  tables:
+    - name: CORE_TRANS_YYYYMMDD
+- name: project-5400504384186300846.BACKEND
+  tables:
+    - name: REGISTER_LOGIN_TRACKING
+      schedule: "15 6 * * *"
+- name: project-5400504384186300846.NonData
+  tables:
+    - name: D_DATE_V3
+      schedule: "15 3 * * *"
+- name: project-5400504384186300846.MBI_DA
+  tables:
+    - name: D_OP_USER_PROFILE
+      schedule: "15 3 * * *"
+- name: momovn-prod.HELIOS
+  tables:
+    - name: PHONEBOOK
+      schedule: "30 8 * * *"
+- name: momovn-prod.FUSION
+  tables:
+    - name: PHONE_BOOKS_V2_SNAPSHOT_YYYYMMDD
+- name: momovn-dev.APP_VARZ
+  tables:
+    - name: APP_EVENT_V4
+      schedule: "15 3 * * *"
+- name: momovn-data-platform.APP_VARZ
+  tables:
+    - name: APP_EVENT_V5
+      schedule: "15 0 * * *"
+      enable_insert_override: true
+      rename_to: analytics.app_varz.app_event_v5
+- name: momovn-prod.GRAB_DEFENCE
+  tables:
+    - name: GRAB_DEFENCE_VERDICT_FEATURES_WATSON_ALL_FEATURES_YYYYMMDD
+    - name: GRAB_DEFENCE_VERDICT_FEATURES_ALL_FEATURES_YYYYMMDD
+- name: momovn-prod.STRONGHOLD
+  tables:
+    - name: FEATURE_HUB_GET_FEATURE_V1_LOG
+      schedule: "15 0 * * *"
+      enable_insert_override: true
+- name: momovn-mini-app-analyst.DM_MONITOR_APP_EVENT
+  tables:
+    - name: F_EVENT_STATS_T4
+    - name: F_EVENTS_FIREBASE_STAT
+

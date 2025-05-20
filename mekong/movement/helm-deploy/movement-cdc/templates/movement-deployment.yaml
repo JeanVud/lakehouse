@@ -1,0 +1,56 @@
+{{- $nodeSelector := or .Values.movement.nodeSelector .Values.nodeSelector }}
+{{- $tolerations := or .Values.movement.tolerations .Values.tolerations }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    tier: datalake
+    component: movement
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: {{ .Values.movement.replica }}
+  selector:
+    matchLabels:
+      tier: datalake
+      component: movement
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        tier: datalake
+        component: movement
+        release: {{ .Release.Name }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: {{ .Values.airflowKsa | default "airflow" }}
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: {{ .Values.registry.secretName }}
+      containers:
+        - name: app
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          args: {{ .Values.movement.args | toJson }}
+          env:
+          - name: LOG_LEVEL
+            value: {{ .Values.movement.logLevel }}
+          - name: CHANGE_DATA_CAPTURE_PROJECT_ID
+            value: {{ .Values.pubsub.projectId }}
+          - name: CHANGE_DATA_CAPTURE_TOPIC
+            value: {{ .Values.pubsub.topic }}
+          - name: CHANGE_DATA_CAPTURE_SUBSCRIPTION_ID
+            value: {{ .Values.pubsub.subscriber }}
+
+

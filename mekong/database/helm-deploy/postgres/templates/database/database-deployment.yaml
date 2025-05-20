@@ -1,0 +1,105 @@
+{{- $nodeSelector := or .Values.database.nodeSelector .Values.nodeSelector }}
+{{- $tolerations := or .Values.database.tolerations .Values.tolerations }}
+{{- $affinity := .Values.database.affinity }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    tier: datalake
+    service: movement
+    component: database
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      tier: datalake
+      service: movement
+      component: database
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        tier: datalake
+        service: movement
+        component: database
+        release: {{ .Release.Name }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      affinity:
+{{ toYaml $affinity | indent 8 }}
+      restartPolicy: Always
+      volumes:
+        - name: {{ .Release.Name }}-data-volume
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-config
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+      containers:
+        - name: postgres
+          resources: {{- toYaml .Values.database.resources | nindent 12 }}
+          image: {{ template "database_image" . }}
+          imagePullPolicy: {{ .Values.database.pullPolicy }}
+          args: ['-c', 'config_file=/etc/postgresql/postgresql.conf']
+          ports:
+            - containerPort: {{ .Values.database.port }}
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/movement
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: trust
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secrets
+                  key: POSTGRES_ROOT_PASSWORD
+          livenessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec pg_isready -q
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - exec pg_isready -q
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: {{ .Release.Name }}-data-volume
+            - mountPath: /dev/shm
+              name: dshm
+            - name: config
+              mountPath: /etc/postgresql/postgresql.conf
+              subPath: postgresql.conf

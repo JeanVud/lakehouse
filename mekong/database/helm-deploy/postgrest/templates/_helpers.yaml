@@ -1,0 +1,7 @@
+{{ define "postgrest_image" -}}
+{{ printf "%s:%s" .Values.postgrest.image.repository .Values.postgrest.image.tag }}
+{{- end }}
+
+{{ define "postgrest_config_path" -}}
+{{ (printf "%s/postgrest.conf" "/var/lib/postgrest" ) | quote }}
+{{- end }}

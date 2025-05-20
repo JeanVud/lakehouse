@@ -1,0 +1,85 @@
+{{- $nodeSelector := or .Values.grist.nodeSelector .Values.nodeSelector }}
+{{- $tolerations := or .Values.grist.tolerations .Values.tolerations }}
+{{- $affinity := .Values.grist.affinity }}
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-docs
+  labels:
+    tier: datalake
+    service: movement
+    component: grist
+    worker: docs
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+spec:
+  strategy:
+   type: Recreate
+  replicas: {{ .Values.grist.workerReplica }}
+  selector:
+    matchLabels:
+      tier: datalake
+      service: movement
+      component: grist
+      worker: docs
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        tier: datalake
+        service: movement
+        component: grist
+        worker: docs
+        release: {{ .Release.Name }}
+{{- with .Values.labels }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+      nodeSelector:
+{{ toYaml $nodeSelector | indent 8 }}
+      tolerations:
+{{ toYaml $tolerations | indent 8 }}
+      affinity:
+{{ toYaml $affinity | indent 8 }}
+      restartPolicy: Always
+      volumes:
+      - name: {{ .Release.Name }}-data-volume
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-pvc
+      containers:
+        - name: docs-worker
+          image: {{ template "grist_image" . }}
+          imagePullPolicy: {{ .Values.grist.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.grist.port }}
+          resources: {{- toYaml .Values.grist.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /persist
+            name: {{ .Release.Name }}-data-volume
+          env:
+            - name: GRIST_SERVERS
+              value: docs
+            # - name: GRIST_DOCS_MINIO_BUCKET
+            #   value: momovn-app-grist-us-central1-prod
+            # - name: GRIST_DOCS_MINIO_ENDPOINT
+            #   value: storage.googleapis.com
+            # - name: GRIST_DOCS_MINIO_BUCKET_REGION
+            #   value: us-central1
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config-env
+            - secretRef:
+                name: oauth
+            # - secretRef:
+            #     name: gcs
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: {{ .Values.grist.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            

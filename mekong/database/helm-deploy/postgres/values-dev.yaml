@@ -1,0 +1,27 @@
+tolerations:
+  - key: "service"
+    operator: "Equal"
+    value: "edge-service"
+    effect: "NoSchedule"
+
+nodeSelector:
+  cloud.google.com/gke-nodepool: spot-c2d-2-8
+
+database:
+  enabled: true
+
+  pv:
+    diskId: projects/data-platform-exp-322803/zones/us-central1-c/disks/movement-database-pd
+    storageClass: standard-rwo
+  pvc:
+    storageSize: 10Gi
+
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                  - us-central1-c
