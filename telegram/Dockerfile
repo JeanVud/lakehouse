@@ -1,5 +1,9 @@
 FROM python:3.12
 
-RUN pip install fastapi
+RUN pip install fastapi[standard]
 
-CMD ["sleep", "infinity"]
+COPY app /app
+
+USER daemon
+
+CMD [ "sleep", "infinity" ]
