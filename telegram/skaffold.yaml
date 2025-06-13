@@ -16,3 +16,4 @@ profiles:
       docker:
         images:
           - vudangquynhgiang/telegram-bot:latest
+        name: telegram-bot
