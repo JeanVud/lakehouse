@@ -12,7 +12,4 @@ profiles:
         push: true
       tagPolicy:
         sha256: {}
-    deploy:
-      docker:
-        images:
-          - vudangquynhgiang/telegram-bot:latest
+    deploy: {}

@@ -1,0 +1,1 @@
+docker run -d vudangquynhgiang/telegram-bot:latest
