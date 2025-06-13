@@ -1,6 +1,0 @@
-database:
-  name: leaderboards
-  dbSchemas: "public, scoreboards"
-
-postgrest:
-  host: postgrest.dev.mservice.io

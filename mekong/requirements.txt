@@ -1,9 +1,0 @@
-flask
-google-cloud-storage
-pyhive[hive]
-google-cloud
-google
-google-cloud-bigquery
-pydantic
-sqlglot
-click

@@ -1,2 +1,0 @@
-GRANT ALL PRIVILEGES ON DATABASE {{ .Values.database.dbname | default "grist" }} TO {{ .Values.database.username | default "grist" }};
-GRANT ALL ON SCHEMA public TO {{ .Values.database.username | default "grist" }};
