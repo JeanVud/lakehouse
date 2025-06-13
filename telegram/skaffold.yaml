@@ -1,0 +1,21 @@
+apiVersion: skaffold/v4beta12
+kind: Config
+profiles:
+  - name: build
+    build:
+      artifacts:
+        - image: vudangquynhgiang/telegram-bot
+          context: ./telegram
+          docker:
+            dockerfile: ./Dockerfile
+      local:
+        push: true
+      tagPolicy:
+        sha256: {}
+    deploy: {}
+
+  - name: deploy
+    deploy:
+      docker:
+        images:
+          - vudangquynhgiang/telegram-bot:latest
