@@ -1,1 +1,1 @@
-docker run -d vudangquynhgiang/telegram-bot:latest
+docker run -d vudangquynhgiang/telegram-bot:latest telegram-bot
