@@ -1,5 +1,5 @@
 apt-get update
-apt-get install -y skaffold git docker
+apt-get install -y git
 
 # INSTALL DOCKER
 # Add Docker's official GPG key:
@@ -17,3 +17,9 @@ echo \
 sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+
+# INSTALL SKAFFOLD
+curl -Lo skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64 && \
+sudo install skaffold /usr/local/bin/
