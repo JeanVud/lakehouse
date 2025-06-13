@@ -1,1 +1,1 @@
-docker run -d vudangquynhgiang/telegram-bot:latest telegram-bot
+docker run -d --name my_postgres vudangquynhgiang/telegram-bot:latest
