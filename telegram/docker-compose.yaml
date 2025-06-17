@@ -8,5 +8,5 @@ services:
     # image: vudangquynhgiang/telegram-bot
     container_name: telegram-bot
     ports:
-      - "443:8000"
+      - "443:443"
     command: ["fastapi", "run", "app/main.py"]
