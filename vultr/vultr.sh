@@ -1,0 +1,4 @@
+export VULTR_IP=208.167.237.27
+export VULTR_USER=root
+
+ssh $VULTR_USER@$VULTR_IP
