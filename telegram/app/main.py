@@ -26,7 +26,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=443,  # Expose on port 443 for HTTPS
+        # port=443,  # Expose on port 443 for HTTPS
         ssl_keyfile=PRIVKEY_PATH,
         ssl_certfile=FULLCHAIN_PATH,
         reload=True # Set to False for production
