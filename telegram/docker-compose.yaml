@@ -10,3 +10,5 @@ services:
     ports:
       - "443:8000"
     command: ["fastapi", "run", "app/main.py"]
+    mounts:
+      - /etc/letsencrypt/live/quynhgiang.info:/etc/letsencrypt/live/quynhgiang.info
