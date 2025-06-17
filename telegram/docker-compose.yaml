@@ -7,8 +7,10 @@ services:
       # no_cache: true
     # image: vudangquynhgiang/telegram-bot
     container_name: telegram-bot
-    ports:
-      - "443:8000"
+    # ports:
+    #   - "443:8000"
+    expose:
+      - "8000"
     command: ["fastapi", "run", "app/main.py"]
 
   nginx:
