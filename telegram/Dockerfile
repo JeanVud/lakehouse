@@ -1,6 +1,6 @@
 FROM python:3.12
 
-RUN pip install fastapi[standard]
+RUN pip install fastapi[standard] uvicorn
 
 COPY app /app
 
