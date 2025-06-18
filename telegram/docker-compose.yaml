@@ -3,15 +3,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      # platform: [linux/amd64]
-      # no_cache: true
-    # image: vudangquynhgiang/telegram-bot
     container_name: telegram-bot
     # ports:
     #   - "443:8000"
     expose:
       - "8000"
     command: ["fastapi", "run", "app/main.py"]
+    networks:
+      - app-network
 
   nginx:
     image: nginx:latest # Use the official Nginx image
@@ -24,8 +23,7 @@ services:
       # Mount your custom Nginx configuration file
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       # Mount Certbot SSL certificates from your host
-      # This path must match where Certbot saved your certs on the host machine!
-      - /etc/letsencrypt/live/quynhgiang.info/:/etc/nginx/certs/:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
       # Mount Nginx logs directory (optional, but good for debugging)
       - ./nginx/logs:/var/log/nginx
     # Ensure Nginx starts after the FastAPI app is ready (though Nginx retries connections)
