@@ -8,6 +8,8 @@ services:
     #   - "443:8000"
     expose:
       - "8000"
+    env_file:
+      - ../env/.env
     command: ["fastapi", "run", "app/main.py"]
     networks:
       - app-network
