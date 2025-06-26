@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  miniapps:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: lakehouse-miniapps
+    restart: unless-stopped
+    # ports: 
+    #   - "3000:3000"
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  nginx:
+    image: nginx:alpine
+    container_name: miniapps-nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"  # Map host port 8080 to container port 80
+      # - "443:443" # Uncomment for HTTPS
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # - ./nginx/logs:/var/log/nginx
+    depends_on:
+      miniapps:
+        condition: service_healthy
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge 
