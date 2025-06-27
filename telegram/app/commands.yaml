@@ -1,0 +1,24 @@
+# Command configuration file
+# Add new commands here to automatically register them
+
+commands:
+  log_finance:
+    class: LogFinanceCommand
+    file: log_finance.py
+    needs_session: true
+    timeout_minutes: 5
+    command_name: log-finance
+    
+  help:
+    class: HelpCommand
+    file: help_command.py
+    needs_session: false
+    timeout_minutes: 0
+    command_name: help
+    
+  status:
+    class: StatusCommand
+    file: status_command.py
+    needs_session: false
+    timeout_minutes: 0
+    command_name: status 

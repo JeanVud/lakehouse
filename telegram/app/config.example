@@ -1,0 +1,8 @@
+# Telegram Bot Configuration
+# Get these from @BotFather on Telegram
+
+# Your bot token (required)
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+
+# Your bot username without @ (optional, for group mentions)
+BOT_USERNAME=your_bot_username_here 
