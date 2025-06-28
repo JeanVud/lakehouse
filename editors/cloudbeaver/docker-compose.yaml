@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  cloudbeaver:
+    image: dbeaver/cloudbeaver:latest
+    container_name: cloudbeaver
+    ports:
+      - "127.0.0.1:8978:8978"
+      - "100.113.23.14:8978:8978"
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    restart: unless-stopped
+    networks:
+      - sql_editors_network
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "127.0.0.1:8088:8080"
+      - "100.113.23.14:8088:8080"
+    restart: unless-stopped
+    networks:
+      - sql_editors_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: postgres-server
+      PMA_PORT: 5432
+      PMA_USER: B2k3bITBxw1Xnw7WywJK7Jldnbn
+      PMA_PASSWORD: dTpM4TNr9eZCZJbPIRWzs8980FL
+    ports:
+      - "127.0.0.1:8081:80"
+      - "100.113.23.14:8081:80"
+    restart: unless-stopped
+    networks:
+      - sql_editors_network
+
+  sqlpad:
+    image: sqlpad/sqlpad:latest
+    container_name: sqlpad
+    environment:
+      SQLPAD_ADMIN: admin@example.com
+      SQLPAD_ADMIN_PASSWORD: admin123
+      SQLPAD_DISABLE_USAGE: "true"
+    ports:
+      - "127.0.0.1:8082:3000"
+      - "100.113.23.14:8082:3000"
+    volumes:
+      - sqlpad_data:/var/lib/sqlpad
+    restart: unless-stopped
+    networks:
+      - sql_editors_network
+
+volumes:
+  cloudbeaver_data:
+  sqlpad_data:
+
+networks:
+  sql_editors_network:
+    driver: bridge

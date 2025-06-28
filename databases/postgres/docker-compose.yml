@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5432:5432" # only allow from localhost
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    networks:
+      - postgres-network
+      - cloudbeaver_sql_editors_network
+
+networks:
+  postgres-network:
+    driver: bridge
+  cloudbeaver_sql_editors_network:
+    external: true 

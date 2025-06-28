@@ -36,3 +36,12 @@ sudo ufw enable # if firewall is not enabled
 sudo ufw status
 
 sudo certbot certonly --standalone -d quynhgiang.info
+
+
+# INSTALL TAILSCALE
+curl -fsSL https://tailscale.com/install.sh | sh sudo tailscale up
+# check tailscale status
+sudo tailscale status
+
+# INSTALL POSTGRES SQL CLIENT
+sudo apt-get install -y postgresql-client
