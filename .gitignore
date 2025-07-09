@@ -2,3 +2,5 @@ env/
 .idea/
 databases/postgres/data/
 databases/postgres/.env
+
+telegram-bots/anathema/.env

@@ -1,0 +1,19 @@
+services:
+  bot-anathema:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bot-anathema
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    networks:
+      - bot-network
+
+networks:
+  bot-network:
+    name: bot-network
+    driver: bridge
+    external: true
