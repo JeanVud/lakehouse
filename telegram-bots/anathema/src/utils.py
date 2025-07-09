@@ -18,8 +18,9 @@ async def send_message(bot_token: str, chat_id: int, text: str, parse_mode: str 
         "text": text,
         "parse_mode": parse_mode
     }
-    async with httpx.AsyncClient() as client:
-        await client.post(url, json=payload) 
+    response = httpx.post(url, json=payload)
+    if response.status_code != 200:
+        logger.error(f"Failed to send message: {response.text}")
 
 def set_bot_webhook(bot_token: str, webhook_url: str):
     logger.info(f"Setting webhook to {webhook_url}")
@@ -40,3 +41,17 @@ def get_bot_info(bot_token: str):
     if response.status_code != 200:
         raise Exception(f"Failed to get bot info: {response.text}")
     return response.json()
+
+def set_bot_commands(bot_token: str, commands: list):
+    """Set bot commands using Telegram Bot API setMyCommands"""
+    url = f"https://api.telegram.org/bot{bot_token}/setMyCommands"
+    payload = {
+        "commands": commands
+    }
+    response = httpx.post(url, json=payload)
+    if response.status_code != 200:
+        logger.error(f"Failed to set bot commands: {response.text}")
+        return False
+    else:
+        logger.info(f"Bot commands set successfully: {len(commands)} commands")
+        return True
