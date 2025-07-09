@@ -20,3 +20,4 @@ networks:
   default-network:
     name: default-network
     external: true
+    driver: bridge

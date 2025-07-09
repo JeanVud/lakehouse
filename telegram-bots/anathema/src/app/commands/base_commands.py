@@ -4,8 +4,9 @@ Advanced command handling system for Telegram bot
 import re
 from typing import Callable, Dict, Any, Optional
 from functools import wraps
-from utils import send_message, logger
-from config import TELEGRAM_BOT_TOKEN
+from app.services.telegram_service import send_message
+from core.utils import logger
+from core.config import TELEGRAM_BOT_TOKEN
 
 class CommandHandler:
     """Command handler class with decorator support"""
@@ -18,17 +19,17 @@ class CommandHandler:
         """Decorator to register a command"""
         def decorator(func: Callable):
             @wraps(func)
-            async def wrapper(chat_id: int, args: str = "", **kwargs):
+            def wrapper(chat_id: int, args: str = "", **kwargs):
                 try:
                     # Run middleware
                     for middleware_func in self.middleware:
-                        await middleware_func(chat_id, name, args, **kwargs)
+                        middleware_func(chat_id, name, args, **kwargs)
                     
                     # Execute command
-                    return await func(chat_id, args, **kwargs)
+                    return func(chat_id, args, **kwargs)
                 except Exception as e:
                     logger.error(f"Error in command {name}: {e}")
-                    await send_message(TELEGRAM_BOT_TOKEN, chat_id, f"❌ Error executing command: {str(e)}")
+                    send_message(TELEGRAM_BOT_TOKEN, chat_id, f"❌ Error executing command: {str(e)}")
             
             self.commands[name] = wrapper
             wrapper.description = description
@@ -40,7 +41,7 @@ class CommandHandler:
         self.middleware.append(func)
         return func
     
-    async def execute(self, chat_id: int, text: str, **kwargs):
+    def execute(self, chat_id: int, text: str, **kwargs):
         """Execute command based on text"""
         command, args = self.parse_command(text)
         
@@ -48,10 +49,10 @@ class CommandHandler:
             return False
         
         if command in self.commands:
-            await self.commands[command](chat_id, args, **kwargs)
+            self.commands[command](chat_id, args, **kwargs)
             return True
         else:
-            await self.handle_unknown_command(chat_id, command)
+            self.handle_unknown_command(chat_id, command)
             return True
     
     def parse_command(self, text: str) -> tuple[str, str]:
@@ -63,7 +64,7 @@ class CommandHandler:
             return command, args
         return "", ""
     
-    async def handle_unknown_command(self, chat_id: int, command: str):
+    def handle_unknown_command(self, chat_id: int, command: str):
         """Handle unknown commands"""
         available_commands = list(self.commands.keys())
         unknown_message = f"""
@@ -74,7 +75,7 @@ Available commands:
 
 Type `/help` for more information.
         """
-        await send_message(TELEGRAM_BOT_TOKEN, chat_id, unknown_message.strip())
+        send_message(TELEGRAM_BOT_TOKEN, chat_id, unknown_message.strip())
     
     def _get_command_info(self) -> list:
         """Get list of command information (name, description)"""
@@ -116,19 +117,19 @@ handler = CommandHandler()
 
 # Example middleware for logging
 @handler.add_middleware
-async def log_commands(chat_id: int, command: str, args: str, **kwargs):
+def log_commands(chat_id: int, command: str, args: str, **kwargs):
     """Log all command executions"""
     logger.info(f"Command executed: /{command} by chat_id {chat_id} with args: '{args}'")
 
 # Example middleware for rate limiting (basic implementation)
 @handler.add_middleware
-async def rate_limit(chat_id: int, command: str, args: str, **kwargs):
+def rate_limit(chat_id: int, command: str, args: str, **kwargs):
     """Basic rate limiting - you can implement more sophisticated logic"""
     # This is a placeholder - implement actual rate limiting logic
     pass
 
 @handler.command("help", "Show detailed help information")
-async def help_command(chat_id: int, args: str = ""):
+def help_command(chat_id: int, args: str = ""):
     help_text = handler.get_help_text()
     help_text += """
 
@@ -138,16 +139,16 @@ async def help_command(chat_id: int, args: str = ""):
 **Need Support?**
 Contact the bot administrator for additional help.
     """
-    await send_message(TELEGRAM_BOT_TOKEN, chat_id, help_text)
+    send_message(TELEGRAM_BOT_TOKEN, chat_id, help_text)
 
 @handler.command("ping", "Test bot response time")
-async def ping_command(chat_id: int, args: str = ""):
-    await send_message(TELEGRAM_BOT_TOKEN, chat_id, "🏓 Pong! Bot is responding quickly.")
+def ping_command(chat_id: int, args: str = ""):
+    send_message(TELEGRAM_BOT_TOKEN, chat_id, "🏓 Pong! Bot is responding quickly.")
 
 @handler.command("echo", "Echo back the provided text")
-async def echo_command(chat_id: int, args: str = ""):
+def echo_command(chat_id: int, args: str = ""):
     if not args.strip():
-        await send_message(TELEGRAM_BOT_TOKEN, chat_id, "❌ Please provide text to echo.\nUsage: `/echo <your text>`")
+        send_message(TELEGRAM_BOT_TOKEN, chat_id, "❌ Please provide text to echo.\nUsage: `/echo <your text>`")
         return
     
-    await send_message(TELEGRAM_BOT_TOKEN, chat_id, f"📢 Echo: {args}")
+    send_message(TELEGRAM_BOT_TOKEN, chat_id, f"📢 Echo: {args}")

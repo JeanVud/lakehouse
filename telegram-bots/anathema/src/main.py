@@ -1,9 +1,12 @@
 from fastapi import FastAPI, Request
-from utils import send_message, logger, set_bot_commands
-from config import TELEGRAM_BOT_TOKEN, WEBHOOK_URL
-from utils import set_bot_webhook
-from commands import handler
-import json
+from app.services.telegram_service import send_message, set_bot_commands, set_bot_webhook
+from core.utils import logger
+from core.config import TELEGRAM_BOT_TOKEN, WEBHOOK_URL
+from app.commands.base_commands import handler
+from core.database import setup_database
+
+# Import reminder commands to register them
+import app.commands.reminder_commands
 
 app = FastAPI()
 
@@ -29,17 +32,17 @@ async def telegram_webhook(request: Request):
 
     try:
         # Try to execute as command first
-        command_executed = await handler.execute(chat_id, text)
+        command_executed = handler.execute(chat_id, text)
         
         # If not a command, handle as regular message
         if not command_executed:
-            await send_message(TELEGRAM_BOT_TOKEN, chat_id, f"You said: {text}")
+            send_message(TELEGRAM_BOT_TOKEN, chat_id, f"You said: {text}")
             
     except Exception as e:
         logger.error(f"❌ Error handling message: {e}")
         # Send error message to user
         try:
-            await send_message(TELEGRAM_BOT_TOKEN, chat_id, "Sorry, something went wrong. Please try again.")
+            send_message(TELEGRAM_BOT_TOKEN, chat_id, "Sorry, something went wrong. Please try again.")
         except:
             pass
 
@@ -48,6 +51,12 @@ async def telegram_webhook(request: Request):
 @app.on_event("startup")
 async def startup_event():
     logger.info("🚀 Anathema Bot started")
+    
+    # Setup database and run schema
+    try:
+        await setup_database()
+    except Exception as e:
+        logger.error(f"❌ Database setup failed: {e}")
     
     # Set webhook
     set_bot_webhook(TELEGRAM_BOT_TOKEN, WEBHOOK_URL)
