@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
@@ -17,6 +15,7 @@ services:
 
 networks:
   postgres-network:
+    name: postgres-network
     driver: bridge
   cloudbeaver_sql_editors_network:
     external: true 
