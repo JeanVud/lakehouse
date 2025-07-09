@@ -14,10 +14,9 @@ services:
       # Mount Nginx logs directory (optional, but good for debugging)
       # - ./nginx/logs:/var/log/nginx
     networks:
-      - bot-network
+      - default-network
 
 networks:
-  bot-network:
-    name: bot-network
-    driver: bridge
+  default-network:
+    name: default-network
     external: true

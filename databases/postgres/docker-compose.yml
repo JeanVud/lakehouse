@@ -1,21 +1,33 @@
 services:
-  postgres:
+  postgres-server:
     image: postgres:15
     container_name: postgres-server
     restart: unless-stopped
     env_file:
       - .env
-    ports:
-      - "127.0.0.1:5432:5432" # only allow from localhost
+    expose:
+      - "5432"
+    # ports:
+    #   - "127.0.0.1:5432:5432" # only allow from localhost
     volumes:
       - ./data:/var/lib/postgresql/data
     networks:
-      - postgres-network
-      - cloudbeaver_sql_editors_network
+      - default-network
+
+  postgrest:
+    container_name: postgrest
+    image: postgrest/postgrest
+    expose:
+      - "3000"
+    environment:
+      PGRST_DB_URI: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres-server:5432/postgres
+      PGRST_OPENAPI_SERVER_PROXY_URI: http://127.0.0.1:3000
+    networks:
+      - default-network
+    depends_on:
+      - postgres-server
 
 networks:
-  postgres-network:
-    name: postgres-network
-    driver: bridge
-  cloudbeaver_sql_editors_network:
-    external: true 
+  default-network:
+    name: default-network
+    external: true

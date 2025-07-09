@@ -10,10 +10,9 @@ services:
     expose:
       - "8000"
     networks:
-      - bot-network
+      - default-network
 
 networks:
-  bot-network:
-    name: bot-network
-    driver: bridge
+  default-network:
+    name: default-network
     external: true

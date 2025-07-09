@@ -7,11 +7,9 @@ services:
     ports:
       - "127.0.0.1:8978:8978"
       - "100.113.23.14:8978:8978"
-    volumes:
-      - cloudbeaver_data:/opt/cloudbeaver/workspace
     restart: unless-stopped
     networks:
-      - sql_editors_network
+      - default-network
 
   adminer:
     image: adminer:latest
@@ -21,7 +19,7 @@ services:
       - "100.113.23.14:8088:8080"
     restart: unless-stopped
     networks:
-      - sql_editors_network
+      - default-network
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
@@ -36,7 +34,7 @@ services:
       - "100.113.23.14:8081:80"
     restart: unless-stopped
     networks:
-      - sql_editors_network
+      - default-network
 
   sqlpad:
     image: sqlpad/sqlpad:latest
@@ -48,16 +46,11 @@ services:
     ports:
       - "127.0.0.1:8082:3000"
       - "100.113.23.14:8082:3000"
-    volumes:
-      - sqlpad_data:/var/lib/sqlpad
     restart: unless-stopped
     networks:
-      - sql_editors_network
-
-volumes:
-  cloudbeaver_data:
-  sqlpad_data:
+      - default-network
 
 networks:
-  sql_editors_network:
-    driver: bridge
+  default-network:
+    name: default-network
+    external: true

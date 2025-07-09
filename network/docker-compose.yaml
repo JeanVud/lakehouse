@@ -1,0 +1,12 @@
+networks:
+  default-network:
+    name: default-network
+    driver: bridge
+
+services:
+  busybox:
+      image: busybox
+      restart: always
+      container_name: busybox
+      networks:
+          - default-network
